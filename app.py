@@ -19,18 +19,27 @@ class Quiz(Resource):
       return name_ja[0]
 
   def get(self):
-    idx = random.randrange(1,Quiz.ALL_MOVES+1)
-    r_move = requests.get("https://pokeapi.co/api/v2/move/" + str(idx)).json()
+    # ランダムにわざを1つ選択
+    while True:
+      idx = random.randrange(1,Quiz.ALL_MOVES+1)
+      r_move = requests.get("https://pokeapi.co/api/v2/move/" + str(idx)).json()
+      # わざを覚えるポケモンが存在しない場合
+      if len(r_move["learned_by_pokemon"])!=0:
+        break
     
+    # わざの名前（英/日）を取得
     move_name_en = r_move["name"]
     move_name_ja = self._getNameJa(r_move["names"])
     
+    # わざのタイプを取得
     r_type = requests.get(r_move["type"]["url"]).json()
     move_type_ja = self._getNameJa(r_type["names"])
-    
+
+    # わざのクラス（ぶつり/とくしゅ/へんか）を取得
     r_class = requests.get(r_move["damage_class"]["url"]).json()
     move_class_ja = self._getNameJa(r_class["names"])
     
+    # わざを覚えるポケモンを取得
     learning_pokemon_url = random.choice(r_move["learned_by_pokemon"])["url"]
     r_learning_pokemon = requests.get(learning_pokemon_url).json()
     r_species = requests.get(r_learning_pokemon["species"]["url"]).json()
